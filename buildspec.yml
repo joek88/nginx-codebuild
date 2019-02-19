@@ -13,13 +13,15 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
+      - BUILD_DATE_TIME=$(date -u +%Y%m%d__%H%M)
       - echo "AWS_DEFAULT_REGION = $AWS_DEFAULT_REGION"
       - echo "AWS_ACCOUNT_ID = $AWS_ACCOUNT_ID"
       - echo "IMAGE_REPO_NAME = $IMAGE_REPO_NAME"
       - echo "IMAGE_TAG = $IMAGE_TAG"
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
       - CODEBUILD_RESOLVED_SOURCE_VERSION="${CODEBUILD_RESOLVED_SOURCE_VERSION:-$IMAGE_TAG}"
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - GIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG="VMX_DEPLOYMENT__PROD__"$BUILD_DATE_TIME"__"$GIT_HASH
       - IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
   build:
     commands:
@@ -32,7 +34,8 @@ phases:
       - echo Build stage successfully completed on `date`
       - echo Pushing the Docker image...
       - docker push $IMAGE_URI
-      - printf '[{"name":"NGINX","imageUri":"%s"}]' "$IMAGE_URI"
-      - printf '[{"name":"NGINX","imageUri":"%s"}]' "$IMAGE_URI" > images.json
+      - TASK_DESCRIPTION="NGINX"
+      - printf '[{"name":"$TASK_DESCRIPTION","imageUri":"%s"}]' "$IMAGE_URI"
+      - printf '[{"name":"$TASK_DESCRIPTION","imageUri":"%s"}]' "$IMAGE_URI" > images.json
 artifacts:
   files: images.json
