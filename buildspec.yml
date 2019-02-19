@@ -35,7 +35,7 @@ phases:
       - echo Pushing the Docker image...
       - docker push $IMAGE_URI
       - TASK_DESCRIPTION="NGINX"
-      - printf '[{"name":"$TASK_DESCRIPTION","imageUri":"%s"}]' "$IMAGE_URI"
-      - printf '[{"name":"$TASK_DESCRIPTION","imageUri":"%s"}]' "$IMAGE_URI" > images.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' "$TASK_DESCRIPTION" "$IMAGE_URI"
+      - printf '[{"name":"%s","imageUri":"%s"}]' "$TASK_DESCRIPTION" "$IMAGE_URI" > images.json
 artifacts:
   files: images.json
